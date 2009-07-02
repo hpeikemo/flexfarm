@@ -1,0 +1,60 @@
+#!/usr/bin/env ruby
+
+$: << File.expand_path("#{File.dirname(__FILE__)}/../lib")
+
+
+require "flexfarm_config.rb"
+require "socket"
+
+include Flexfarm
+
+
+SERVER_SCRIPT = File.dirname(__FILE__)+"/fffcshd"
+COMPILE_ARGS = ARGV.join(" ")
+
+errors = []
+compileErrors = []
+completed = false
+
+connection = TCPSocket.new("127.0.0.1", COMPILER_PORT) rescue nil
+if !connection
+   if File.exist? SERVER_SCRIPT
+      verbose_puts("Compiler deamon not running, attempting to start...")
+      system("#{SERVER_SCRIPT} 1>/dev/null 2>/dev/null &")         
+      sleep 0.5
+      connection = TCPSocket.new("127.0.0.1", COMPILER_PORT)
+   else
+      verbose_puts("Compiler deamon not running",1)
+      errors.push("Compiler deamon not running")
+   end
+end
+
+hello = connection.gets.chomp rescue nil
+
+if hello == "[connected]"   
+   connection.puts COMPILE_ARGS
+   while !connection.closed? && (line = connection.gets) 
+      if line =~ /^\[done\]/
+         verbose_puts("Operation complete.",1)
+         completed = true
+      elsif line =~ /^\[compileError\](.*)$/
+         compileErrors.push( $1 )
+      elsif line =~ /^\[error\](.*)$/
+         compileErrors.push( $1 )      
+      else
+         puts color("Output: ",36)+ line
+      end      
+   end
+   verbose_puts("Disconnected",1)
+end
+
+if (completed && compileErrors.empty?)
+   puts "[SUCCESS]"
+else
+   puts "[FAIL]"   
+   (errors+compileErrors).each do |error|
+      STDERR.puts error
+   end
+   exit 1
+end
+

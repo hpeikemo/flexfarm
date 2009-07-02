@@ -1,0 +1,37 @@
+#!/usr/bin/env ruby
+
+$:.unshift File.expand_path("#{File.dirname(__FILE__)}/../lib")
+$:<<File.dirname(__FILE__)
+@command = ARGV.shift
+bin_name = File.basename(__FILE__)
+
+unless @command
+   puts "Type '#{bin_name} help' for usage."   
+   exit 1
+end
+
+def edit(file)
+   `#{ENV["EDITOR"] || "vim"} #{file}`      
+end
+
+
+case @command
+when "config"
+   require "generator.rb"
+   edit(Flexfarm::create_userconfig)   
+when "generate_rakefile"
+   require "generator.rb"
+   Flexfarm::create_rakefile
+when "compile"
+   load "ffcompile"
+when "fcshd"
+   load "fffcshd"
+when "debugger"
+   load "ffdebugger"
+when "help"
+   puts "#{bin_name} compile [compiler args...]","#{bin_name} fcshd","#{bin_name} debugger","#{bin_name} config","#{bin_name} generate_rakefile"
+else
+   puts "Unknown flexfarm command '#{@command}'. Type '#{bin_name} help' for usage."
+   exit 1
+end
+

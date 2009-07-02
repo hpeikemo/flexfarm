@@ -1,0 +1,49 @@
+#!/usr/bin/env ruby
+
+
+$: << File.expand_path("#{File.dirname(__FILE__)}/../lib")
+
+require "flexfarm_config.rb"
+require "fdb.rb"
+require "readline"
+    
+include Flexfarm
+
+puts "\tStarting Flash debugger.","\tWaiting for connections."
+
+begin   
+   fdb = FDB.new(FDB_BIN)
+   while fdb.running?
+      sleep 0.1
+      
+      keyboard_input = FDB::getLines(STDIN).to_a
+                  
+      fdb.getErrors do |line|
+         puts color("Error: ",31)+line
+      end
+      fdb.getOutput do |line|
+         debugger_output(line) unless [FDB::WAITING_MODE,FDB::IDLE_MODE].include? fdb.mode
+      end
+      if fdb.available
+         fdb.dispatch("run")        if fdb.mode == FDB::IDLE_MODE         
+         fdb.dispatch("continue")   if fdb.mode == FDB::RUNNING_MODE
+         if fdb.mode == FDB::BREAK_MODE
+            begin
+               input = Readline::readline( color("input: ",31) )
+               Readline::HISTORY.push(input)
+            end while input !~ /\w/
+            fdb.dispatch( input )
+         end
+      elsif keyboard_input.last == "\n"
+         fdb.break
+      end
+   end
+rescue Exception => e
+   if e.class == Interrupt
+      puts "","Caught interupt signal.."
+   else
+      puts color("Unhandled exception: ",31)+e.inspect
+   end
+ensure
+   fdb.cleanup
+end

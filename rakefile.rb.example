@@ -1,0 +1,29 @@
+require "flexfarm"
+
+# 
+##   Project have some default properties,
+##   run 'rake info' to print full configuration.
+#         
+
+Flexfarm::Rake::define_project do |p|
+   p.add_target( "main.swf","src/Main.as" )
+
+   p.preview_file = "index.html"
+   
+   p.srcs << "src" << "lib" << "tests"
+
+   p.libs.push << "lib"\
+               << "#{Flexfarm::FLEX_HOME}/frameworks/libs/flex.swc"\
+               << "#{Flexfarm::FLEX_HOME}/frameworks/libs/utilities.swc"\
+               << "#{Flexfarm::FLEX_HOME}/frameworks/libs/framework.swc"\
+               << "#{Flexfarm::FLEX_HOME}/frameworks/libs/player/9/playerglobal.swc"
+
+   p.assets << Flexfarm::Rake::SourceDir.new("src") { |fl|
+      fl.add "assets","assets/**/*","*.xml","*.swf"
+      fl.exclude(/ Report\.txt$/)
+   }
+   p.assets << Flexfarm::Rake::SourceDir.new("html-template") { |fl|
+      fl.add "**/*"
+   }
+
+end

@@ -1,0 +1,74 @@
+#!/usr/bin/env ruby
+
+$: << File.expand_path("#{File.dirname(__FILE__)}/../lib")
+
+require "flexfarm_config.rb"
+require "fcsh.rb"
+require "socket"
+
+include Flexfarm
+
+
+begin
+   fcsh = FCSH.new(FCSH_BIN)
+   server = TCPServer.new("127.0.0.1", COMPILER_PORT)      
+   while fcsh.running? && !fcsh.available
+      sleep 0.2         
+      fcsh.getOutput do |line|
+         debugger_output(line)
+      end      
+   end
+         
+   fcsh.mode = FCSH::IDLE_MODE
+   puts "Accepting connections."
+   
+   while fcsh.running? && (connection = server.accept)         
+      verbose_puts("Got connection",1)
+      connection.puts "[connected]"
+      
+      queue = []
+
+      until connection.closed?
+         sleep 0.01
+         queue.push( *FCSH::getLines(connection).to_a )
+
+         fcsh.getErrors do |line|
+            puts color("Error: ",31)+line
+            if line =~ /.+\(\d+\)\: col\: /
+               connection.puts "[compileError]#{line}" 
+            elsif line =~ /Error\:/
+               connection.puts "[error]#{line}"
+            end
+         end         
+         fcsh.getOutput do |line|            
+            debugger_output(line)
+            connection.puts line
+         end
+         if fcsh.available
+            if !queue.empty?
+               input = queue.shift            
+               connection.close if input == "\r\n"
+               
+               if input =~ /^(mxmlc|compc )/
+                  fcsh.compile( input.chomp ) 
+               elsif input =~ /^q/                                 
+                  fcsh.dispatch("quit")
+                  exit 0
+               end
+            else
+               connection.puts "[done]"
+               connection.close
+            end
+         end      
+      end
+   end
+   
+rescue Exception => e
+   if e.class == Interrupt
+      puts "","Caught interupt signal.."
+   else
+      puts color("Unhandled exception: ",31)+e.inspect
+   end
+ensure
+   fcsh.cleanup
+end
