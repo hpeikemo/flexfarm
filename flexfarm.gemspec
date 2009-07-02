@@ -19,7 +19,6 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
   s.rubyforge_project = %q{flexfarm}
   s.rubygems_version = %q{1.3.1}
-  s.signing_key = %q{/Users/hp/.gem/gem-private_key.pem}
   s.summary = %q{flexFarm is a set of tools to charge and improve ActionScript development.}
 
   if s.respond_to? :specification_version then
