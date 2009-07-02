@@ -1,6 +1,6 @@
 = flexfarm
 
-http://code.google.com/p/flexfarm/
+http://hpeikemo.github.com/flexfarm/
 
 == DESCRIPTION:
 
