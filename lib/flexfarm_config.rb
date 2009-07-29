@@ -38,8 +38,11 @@ module Flexfarm
             printContext = false
             argsMessage = [32]
          end
+         if m[2].match(/^Error/)              
+            argsMessage = [31]
+         end
          
-         puts (printContext ? color(m[1],*args)+" " : "")+color(m[2],*argsMessage)
+         puts (printContext ? color(m[1],*args)+" " : "")+color(m[2],*argsMessage)      
       else
          puts color(line.chomp)
       end

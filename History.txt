@@ -1,3 +1,7 @@
+=== 0.3.2 / 2009-29-7
+
+* ffdebugger: Error output gets red text color.
+
 === 0.3.1 / 2009-24-6
 
 * Using join(" ") instead og Array#to_s.
