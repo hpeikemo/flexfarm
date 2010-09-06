@@ -22,7 +22,7 @@ module Rake
       desc "Output project settings."
       task :info do
          Flexfarm::Rake::each_project do |project|
-            puts heading("Project info for #{project.name}",35),"",project.info   
+            puts Flexfarm::heading("Project info for #{project.name}",35),"",project.info   
          end         
       end
             
@@ -77,7 +77,11 @@ module Rake
             if project.air_descriptor
                system("#{Flexfarm::ADL_BIN} -runtime #{Flexfarm::ADL_RUNTIME} #{project.expand_path("#{project.debug_dir}/#{project.air_descriptor}",true)} #{project.expand_path(project.debug_dir)} &")
             else
+              if project.preview_file =~ /^http/
+                system("open", project.preview_file)    
+              else
                system("open", project.expand_path("#{project.debug_dir}/#{project.preview_file}",true) )   
+             end
             end
          end                           
       end
@@ -137,7 +141,8 @@ module Rake
             time = Time.new.to_i
             [project.debug_dir,project.release_dir].each do |dir|
                path = project.expand_path(dir)               
-               FileUtils.mv(path,"/tmp/deleted_#{project.name}_#{File.basename(dir)}_#{time}") if File.exist? path
+               # FileUtils.mv(path,"/tmp/deleted_#{project.name}_#{File.basename(dir)}_#{time}") if File.exist? path
+               puts "CLEANUP DEPRECIATED, #{path} was not removed."
             end
          end
       end

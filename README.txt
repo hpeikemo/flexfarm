@@ -21,7 +21,9 @@ flexFarm is a set of tools to charge and improve ActionScript development.
 
 == INSTALL:
 
-* sudo gem install ....
+gem sources -a http://gems.github.com
+sudo gem install hpeikemo-flexfarm
+
 
 == LICENSE:
 

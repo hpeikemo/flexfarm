@@ -1,3 +1,8 @@
+=== 0.3.3 / 2010-06-9
+
+* clean is depreciated. Will not remove files.
+* preview_file may point to a URL.
+
 === 0.3.2 / 2009-29-7
 
 * ffdebugger: Error output gets red text color.
